@@ -57,7 +57,7 @@ arr = [5, 6, 7]; // 에러! → 재할당만 불가
 >    var x = 10;
 >}
 >console.log(x);  // 10 (에러 안남, 블록 밖인데 접근 가능, 블록 스코프 위반)
->
+>```
 >호이스팅: 변수나 함수 선언이 코드 실행 전에 맨 위로 끌어올려지는 것처럼 동작하는 현상
 >
 > ```javascript
@@ -71,20 +71,6 @@ arr = [5, 6, 7]; // 에러! → 재할당만 불가
 >x = 10;          // 할당은 그대로
 >console.log(x);  // 10
 > ```
----
-
-
-
-```javascript
-typeof "hello"   // "string"
-typeof 42        // "number"
-typeof true      // "boolean"
-typeof null      // "object" ← 유명한 버그, null인데 object 나옴
-typeof undefined // "undefined"
-```
-
-- 괄호는 없어도 되나 관례상 붙여 쓰는 경우가 많음
-- `null`이 `"object"`로 나오는 건 자바스크립트 초기 설계 버그
 
 ---
 
@@ -147,3 +133,15 @@ typeof undefined // "undefined"
 | `parseInt(x)` | 정수로 변환 |
 | `parseFloat(x)` | 실수로 변환 |
 | `typeof x` | 타입 확인 |
+
+> `typeof`는 괄호 없이 써도 되나 관례상 붙여 쓰는 경우가 많음
+>
+> `null`은 원시 타입이지만 `typeof null`이 `"object"`로 나오는 자바스크립트 설계 버그가 있음
+>
+> ```javascript
+> typeof "hello"   // "string"
+> typeof 42        // "number"
+> typeof true      // "boolean"
+> typeof null      // "object" ← 버그
+> typeof undefined // "undefined"
+> ```
