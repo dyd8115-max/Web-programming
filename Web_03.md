@@ -21,6 +21,7 @@
 | 참조 타입 (뮤터블) | `object` | 키-값 쌍 | `{ name: "이용균" }` |
 | | `array` | 배열 (object의 일종) | `[1, 2, 3]` |
 | | `function` | 함수 (object의 일종) | `function() {}` |
+
 > 이뮤터블 (Immutable): 값 자체 변경 불가, 재할당만 가능
 >
 > 뮤터블 (Mutable): 내부 값 직접 수정 가능
@@ -39,26 +40,28 @@
 
 ```javascript
 const user = { name: "이용균" };
-user.name = "이균용";  // 수정 가능
-user.age = 24;         // 추가 가능{ name: "이균용", age: 24 }
-delete user.name;      // 삭제 가능
+user.name = "이균용";  // 수정 가능 → { name: "이균용" }
+user.age = 24;         // 추가 가능 → { name: "이균용", age: 24 }
+delete user.name;      // 삭제 가능 → { age: 24 }
 user = { name: "이균용" }; // 에러! → 재할당 불가(변수가 가리키는 값 자체를 새로운 값으로 교체하는 것 불가능)
 ```
+
 > 블록 스코프: { } 안에서 선언된 변수는 { } 밖에서 접근 불가(let, const가 사용하는 스코프 방식)
+
 ### var (구식, 사용 비권장)
 - 재할당 가능
 - 함수 스코프 (블록 무시, 버그 유발)
 - 호이스팅 문제 있음
 - 현재는 let/const로 대체
 
->함수스코프: { } 안에서만 유효한 범위, var가 사용하는 스코프 방식( if, for 같은 블록은 무시)
->```javascript
->if (true) {
->    var x = 10;
->}
->console.log(x);  // 10 (에러 안남, 블록 밖인데 접근 가능, 블록 스코프 위반)
->```
->호이스팅: 변수나 함수 선언이 코드 실행 전에 맨 위로 끌어올려지는 것처럼 동작하는 현상
+> 함수스코프: { } 안에서만 유효한 범위, var가 사용하는 스코프 방식( if, for 같은 블록은 무시)
+> ```javascript
+> if (true) {
+>     var x = 10;
+> }
+> console.log(x);  // 10 (에러 안남, 블록 밖인데 접근 가능, 블록 스코프 위반)
+> ```
+> 호이스팅: 변수나 함수 선언이 코드 실행 전에 맨 위로 끌어올려지는 것처럼 동작하는 현상
 >
 > ```javascript
 > console.log(x);  // undefined (에러 안남!)
@@ -67,12 +70,46 @@ user = { name: "이균용" }; // 에러! → 재할당 불가(변수가 가리�
 > ```
 > ```javascript
 > var x;           // 선언이 위로 끌어올려짐
->console.log(x);  // undefined
->x = 10;          // 할당은 그대로
->console.log(x);  // 10
+> console.log(x);  // undefined
+> x = 10;          // 할당은 그대로
+> console.log(x);  // 10
 > ```
 
+---
 
+## 객체 프로퍼티
+
+- 프로퍼티: 객체 안에 저장된 데이터로, 키: 값 형태로 구성된 것
+
+```javascript
+const user = {
+    name: "이용균",  // 키: name, 값: "이용균"
+    age: 25,         // 키: age, 값: 25
+    role: "backend"  // 키: role, 값: "backend"
+}
+user.name   // "이용균" (점 표기법으로 접근)
+user["age"] // 25 (괄호 표기법으로 접근)
+```
+
+---
+
+## 스프레드 연산자 (Spread Operator)
+
+- 스프레드 연산자(`...`): 배열이나 객체를 펼쳐서 요소를 꺼내는 연산자
+
+```javascript
+// 배열
+let arr = [1, 2, 3];
+let arr2 = [...arr, 4, 5];        // [1, 2, 3, 4, 5]
+
+// 객체
+let user = { name: "이용균" };
+let user2 = { ...user, age: 25 }; // { name: "이용균", age: 25 }
+
+// 객체 복사
+let original = { name: "이용균" };
+let copy = { ...original };       // 새 객체로 복사
+```
 
 ---
 
