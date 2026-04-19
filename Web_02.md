@@ -45,11 +45,6 @@ https://github.com/LeeYongkun/study
 - **리스닝**: 소켓이 클라이언트 요청이 올 때까지 대기
 - **5-튜플**: 출발지 IP, 출발지 포트, 목적지 IP, 목적지 포트, 프로토콜 — 총 5개로 구성된 소켓 연결을 유일하게 식별하는 정보 묶음
 
-### 연결 방식
-
-- **Non-Persistent**: 요청마다 TCP 연결을 새로 만들고 응답 후 바로 끊는 방식 (헤더 `Connection: close`, 비효율적, 리소스를 아끼거나 짧은 연결이 필요할 때 사용)
-- **Persistent**: 하나의 TCP 연결로 여러 HTTP 요청/응답을 처리하는 방식 (헤더 `Connection: keep-alive`, 빠름, 효율적)
-
 ---
 
 ## 전체 흐름
@@ -120,24 +115,111 @@ https://github.com/LeeYongkun/study
 
 ### 구조
 
-**Request**
+
+**POST 요청 (생성)**
 ```
-POST /users HTTP/1.1
+POST /users HTTP/1.1          # POST: 생성 요청 / /users: 엔드포인트 경로 (목적지 서버 내 세부 주소) / HTTP/1.1: HTTP 버전
+Host: api.example.com         # 목적지 서버 주소
+Content-Type: application/json # 바디 데이터 형식 (JSON)
+Content-Length: 39            # 바디 크기 (바이트)
+Connection: keep-alive        # 연결 유지 (여러 요청 재사용)
+
+{"name": "이용균", "role": "backend"}  # 실제 전송 데이터
+```
+```
+HTTP/1.1 201 Created          # HTTP 버전 / 201: 생성 성공 상태코드
+Content-Type: application/json # 응답 바디 형식 (JSON)
+Content-Length: 52            # 요청(39)보다 증가 → 서버가 id, ok 필드 추가해서 돌려줌
+Connection: keep-alive        # 연결 유지
+
+{"id": 5, "name": "이용균", "role": "backend", "ok": true}  # DB 저장 후 생성된 결과
+```
+
+**GET 요청 (조회)**
+```
+GET /users/5 HTTP/1.1         # GET: 조회 요청 / /users/5: 5번 유저 세부 주소
 Host: api.example.com
-Content-Type: application/json
-Content-Length: 39
-
-{"name": "이용균", "role": "backend"}
+Connection: keep-alive
+                              # 바디 없음 (GET은 바디 불필요)
 ```
-
-**Response**
 ```
-HTTP/1.1 201 Created
+HTTP/1.1 200 OK               # 200: 조회 성공
 Content-Type: application/json
 Content-Length: 52
 
 {"id": 5, "name": "이용균", "role": "backend", "ok": true}
 ```
+
+**PUT 요청 (전체 수정)**
+```
+PUT /users/5 HTTP/1.1         # PUT: 전체 수정 / /users/5: 5번 유저 세부 주소
+Host: api.example.com
+Content-Type: application/json
+Content-Length: 40
+Connection: keep-alive
+
+{"name": "이용균", "role": "frontend"}  # 수정할 전체 데이터
+```
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 55
+
+{"id": 5, "name": "이용균", "role": "frontend", "ok": true}
+```
+
+**DELETE 요청 (삭제)**
+```
+DELETE /users/5 HTTP/1.1      # DELETE: 삭제 요청 / /users/5: 5번 유저 세부 주소
+Host: api.example.com
+Connection: keep-alive
+                              # 바디 없음
+```
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 15
+
+{"ok": true}                  # 삭제 성공 확인
+```
+
+**연결 방식**
+| 방식 | 헤더 | 설명 |
+|---|---|---|
+| Non-Persistent | `Connection: close` | 요청마다 TCP 연결 새로 생성 후 끊음, 비효율적 |
+| Persistent | `Connection: keep-alive` | 하나의 TCP 연결로 여러 요청 처리, 효율적 |
+
+**자주 쓰는 헤더 정리**
+| 헤더 | 설명 |
+|---|---|
+| `Host` | 목적지 서버 주소 |
+| `Content-Type` | 바디 데이터 형식 (json, html 등) |
+| `Content-Length` | 바디 크기 (바이트) |
+| `Connection` | 연결 유지 방식 (keep-alive: 재사용, close: 요청 후 끊음) |
+| `Authorization` | 인증 토큰 (ex: Bearer JWT토큰) |
+| `Accept` | 클라이언트가 받을 수 있는 데이터 형식 |
+| `Cookie` | 클라이언트 저장 데이터 전송 |
+| `Cache-Control` | 캐시 정책 (no-cache, max-age 등) |
+
+**상태코드 정리**
+| 코드 | 의미 | 설명 |
+|---|---|---|
+| 200 | OK | 조회/수정/삭제 성공 |
+| 201 | Created | 생성 성공 |
+| 400 | Bad Request | 잘못된 요청 (파라미터 누락 등) |
+| 401 | Unauthorized | 인증 필요 (로그인 안 됨) |
+| 403 | Forbidden | 권한 없음 (로그인은 됐으나 접근 불가) |
+| 404 | Not Found | 리소스 없음 |
+| 500 | Internal Server Error | 서버 내부 오류 |
+
+**HTTP 메서드 정리**
+| 메서드 | 용도 | 바디 |
+|---|---|---|
+| GET | 조회 | 없음 |
+| POST | 생성 | 있음 |
+| PUT | 전체 수정 | 있음 |
+| PATCH | 일부 수정 | 있음 |
+| DELETE | 삭제 | 없음 |
 
 ### 스타트라인
 
