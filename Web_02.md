@@ -216,6 +216,17 @@ Content-Length: 15
 - Response 바디: 서버가 돌려주는 실제 데이터
 - GET, DELETE는 보통 바디 없음
 
+**헤더/바디 구분자**
+
+헤더와 바디는 `\r\n\r\n` 으로 구분 (마지막 헤더 줄 끝 개행 + 빈 줄 개행 = 총 2번)
+
+```
+Host: api.example.com\r\n         ← 헤더 줄 끝
+Content-Type: application/json\r\n ← 헤더 줄 끝
+\r\n                               ← 추가 개행 (이 시점에 바디 시작으로 인식)
+{"name": "이용균"}                  ← 바디
+```
+
 ### 상태코드
 
 | 코드 | 의미 | 설명 |
