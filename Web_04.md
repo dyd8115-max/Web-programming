@@ -184,8 +184,16 @@ a();
 
 ```javascript
 setTimeout(() => console.log("1초 후 실행"), 1000); // 비동기 콜백
+setTimeout(function() { console.log("1초 후 실행"); }, 1000); // function 키워드로도 사용 가능
 arr.map(item => item * 2);                          // 동기 콜백
 ```
+
+> 개발 과정 중 개발자가 직접 선언
+
+**동기 vs 비동기**
+
+동기: 코드가 순서대로 한 줄씩 실행 (이전 작업 완료 대기)
+비동기: 작업을 위임하고 기다리지 않음 (완료 후 콜백으로 처리)
 
 **동기 콜백 vs 비동기 콜백 실행 흐름**
 
@@ -253,10 +261,18 @@ Web API가 1초 대기
 - FIFO 자료구조 (먼저 들어온 게 먼저 나감)
 - 동기 코드는 큐를 거치지 않고 콜스택에 바로 올라감
 
-| 구분 | 예시 | 우선순위 |
-|---|---|---|
-| 마이크로태스크 큐 | Promise `.then()`, `async/await` | 높음 (먼저 실행) |
-| 태스크 큐 | `setTimeout`, `setInterval`, DOM 이벤트 | 낮음 (나중에 실행) |
+| 구분 | 특징 | 예시 | 우선순위 |
+|---|---|---|---|
+| 태스크 큐 | Web API(타이머, 이벤트 등)의 콜백이 대기 | `setTimeout`, `setInterval`, DOM 이벤트, `fetch` | 낮음 (나중에 실행) |
+| 마이크로태스크 큐 | Promise 기반의 고우선순위 콜백이 대기 | Promise `.then()`, `async/await`, `MutationObserver` | 높음 (먼저 실행) |
+
+> `setInterval`: 일정 시간 간격으로 반복 실행 (setTimeout은 1회만)
+>
+> `fetch`: 서버에 HTTP 요청하는 Web API (Promise 반환)
+>
+> Promise/async/await: 비동기 작업의 결과를 더 깔끔하게 처리하는 방식 (콜백 대체)
+>
+> `MutationObserver`: DOM 변경을 감지하는 Web API
 
 ### 이벤트 루프 (Event Loop)
 
@@ -286,11 +302,17 @@ Web API가 1초 대기
 ## 싱글스레드와 웹 워커
 
 - JS는 기본적으로 싱글스레드 → 한 번에 하나씩만 실행 가능
+- 논블로킹 (Non-blocking): 작업 완료를 기다리지 않고 바로 다음 코드 실행
+
+> JS가 싱글스레드인 이유: 브라우저 보안 (DOM 동시 수정 방지) + 개발 복잡도 감소. 현재는 웹 워커로 멀티스레드 보완.
 
 ### 싱글스레드의 문제점
 
+> 콜스택 블로킹: 초반에 메인 스레드의 무거운 작업이 발생하면 완료될 때까지 다른 모든 작업(이벤트, 렌더링, 콜백)이 대기
+
+메인 스레드에서 무거운 연산 → 다른 작업 블로킹 (UI 멈춤)
+
 ```javascript
-// 메인 스레드에서 무거운 연산 → UI 멈춤
 function heavyCalculation() {
     let sum = 0;
     for (let i = 0; i < 1000000000; i++) {
@@ -305,12 +327,12 @@ heavyCalculation();  // 이 동안 UI 반응 없음 (버튼 클릭 안 됨, 화�
 ### 웹 워커 (Web Worker)
 
 - 별도 스레드에서 JS를 실행할 수 있게 해주는 Web API
-- 무거운 연산을 메인 스레드 방해 없이 백그라운드에서 처리 가능
+- 무거운 연산을 메인 스레드 방해 없이 백그라운드에서 처리 가능 (논블로킹)
 
 **웹 워커로 해결:**
 
 ```javascript
-// 무거운 연산을 별도 스레드에서 처리 → UI는 계속 반응
+// 무거운 연산을 별도 스레드에서 처리 → UI는 계속 반응 (논블로킹)
 const worker = new Worker("heavy.js");
 worker.postMessage("계산 시작");
 // UI는 여전히 반응 가능 ✅
