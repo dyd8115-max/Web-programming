@@ -91,23 +91,24 @@ https://github.com/LeeYongkun/study
 - **과거**: 클라이언트당 스레드(연결을 처리하는 작업 단위) 1개 생성 → 메모리 부족
 - **현재**: NGINX (논블로킹 + 비동기 방식) 또는 Node.js의 싱글 스레드
 
-> 논블로킹: 작업 끝날 때까지 기다리지 않고 바로 다음 코드 실행
+> **논블로킹**: 작업 끝날 때까지 기다리지 않고 바로 다음 코드 실행
 >
-> 비동기: 작업 완료 시점을 나중에 콜백/프로미스로 처리하는 방식
+> **비동기**: 작업 완료 시점을 나중에 콜백/프로미스로 처리하는 방식
 >
-> 스레드: 프로그램 안에서 작업을 실행하는 단위 (코어 위에서 실행)
+> **스레드**: 프로그램 안에서 작업을 실행하는 단위 (코어 위에서 실행)
 
 ### 해결 방식
 
 - **NGINX**: 이벤트 드리븐 + 비동기 논블로킹
-  - worker 프로세스 몇 개만 사용 (CPU 코어 수만큼) → 각 worker가 수천 개 연결 처리 → worker 1개로 수천 개 연결 처리 가능
+  - worker 프로세스 몇 개만 사용 (CPU 코어 수만큼) → 각 worker가 수천 개 연결 처리
   - 이벤트 루프가 계속 돌면서 기다리지 않고 이벤트 발생할 때마다 처리
-  > 소켓을 하나만 안쓰고 소켓 여러 개를 사용함, 이벤트 루프 하나로 전체 소켓 관리
+  - 소켓 여러 개 사용, 이벤트 루프 하나로 전체 소켓 관리
 
-- **싱글 스레드**: 방식은 NGINX와 같으나 스레드 1개만 사용 (한 번에 하나씩 일처리 시작, CPU 코어 수에 맞게 싱글 스레드를 각각 실행하는 클러스터 모드도 존재)
+- **싱글 스레드**: 방식은 NGINX와 같으나 스레드 1개만 사용 (CPU 코어 수에 맞게 클러스터 모드로 실행 가능)
 
-- **이벤트 드리븐**: 이벤트가 발생했을 때 그에 맞는 동작을 실행하는 방식 (논블로킹)
-- **워커 프로세스**: 실제 요청을 처리하는 일꾼 프로세스
+> **이벤트 드리븐**: 이벤트가 발생했을 때 그에 맞는 동작을 실행하는 방식 (논블로킹)
+>
+> **워커 프로세스**: 실제 요청을 처리하는 일꾼 프로세스
 
 ---
 
@@ -115,11 +116,10 @@ https://github.com/LeeYongkun/study
 
 ### 구조
 
-
 **POST 요청 (생성)**
 ```
-POST /users HTTP/1.1          # POST: 생성 요청 / /users: 엔드포인트 경로 (목적지 서버 내 세부 주소) / HTTP/1.1: HTTP 버전
-Host: api.example.com         # 목적지 서버 주소
+POST /users HTTP/1.1          # POST: 생성 요청 / /users: 엔드포인트 경로 (목적지 서버 내 세부 주소, 패스 네임) / HTTP/1.1: HTTP 버전
+Host: api.example.com         # 목적지 서버 주소 (호스트 네임)
 Content-Type: application/json # 바디 데이터 형식 (JSON)
 Content-Length: 39            # 바디 크기 (바이트)
 Connection: keep-alive        # 연결 유지 (여러 요청 재사용)
@@ -128,22 +128,22 @@ Connection: keep-alive        # 연결 유지 (여러 요청 재사용)
 ```
 ```
 HTTP/1.1 201 Created          # HTTP 버전 / 201: 생성 성공 상태코드
-Content-Type: application/json # 응답 바디 형식 (JSON)
+Content-Type: application/json
 Content-Length: 52            # 요청(39)보다 증가 → 서버가 id, ok 필드 추가해서 돌려줌
-Connection: keep-alive        # 연결 유지
+Connection: keep-alive
 
 {"id": 5, "name": "이용균", "role": "backend", "ok": true}  # DB 저장 후 생성된 결과
 ```
 
 **GET 요청 (조회)**
 ```
-GET /users/5 HTTP/1.1         # GET: 조회 요청 / /users/5: 5번 유저 세부 주소
-Host: api.example.com
+GET /users/5 HTTP/1.1         # GET: 조회 요청 / /users/5: 5번 유저 세부 주소 (패스 네임)
+Host: api.example.com         # 목적지 서버 주소 (호스트 네임)
 Connection: keep-alive
                               # 바디 없음 (GET은 바디 불필요)
 ```
 ```
-HTTP/1.1 200 OK               # 200: 조회 성공
+HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 52
 
@@ -152,8 +152,8 @@ Content-Length: 52
 
 **PUT 요청 (전체 수정)**
 ```
-PUT /users/5 HTTP/1.1         # PUT: 전체 수정 / /users/5: 5번 유저 세부 주소
-Host: api.example.com
+PUT /users/5 HTTP/1.1         # PUT: 전체 수정 / /users/5: 5번 유저 세부 주소 (패스 네임)
+Host: api.example.com         # 목적지 서버 주소 (호스트 네임)
 Content-Type: application/json
 Content-Length: 40
 Connection: keep-alive
@@ -170,8 +170,8 @@ Content-Length: 55
 
 **DELETE 요청 (삭제)**
 ```
-DELETE /users/5 HTTP/1.1      # DELETE: 삭제 요청 / /users/5: 5번 유저 세부 주소
-Host: api.example.com
+DELETE /users/5 HTTP/1.1      # DELETE: 삭제 요청 / /users/5: 5번 유저 세부 주소 (패스 네임)
+Host: api.example.com         # 목적지 서버 주소 (호스트 네임)
 Connection: keep-alive
                               # 바디 없음
 ```
@@ -182,44 +182,6 @@ Content-Length: 15
 
 {"ok": true}                  # 삭제 성공 확인
 ```
-
-**연결 방식**
-| 방식 | 헤더 | 설명 |
-|---|---|---|
-| Non-Persistent | `Connection: close` | 요청마다 TCP 연결 새로 생성 후 끊음, 비효율적 |
-| Persistent | `Connection: keep-alive` | 하나의 TCP 연결로 여러 요청 처리, 효율적 |
-
-**자주 쓰는 헤더 정리**
-| 헤더 | 설명 |
-|---|---|
-| `Host` | 목적지 서버 주소 |
-| `Content-Type` | 바디 데이터 형식 (json, html 등) |
-| `Content-Length` | 바디 크기 (바이트) |
-| `Connection` | 연결 유지 방식 (keep-alive: 재사용, close: 요청 후 끊음) |
-| `Authorization` | 인증 토큰 (ex: Bearer JWT토큰) |
-| `Accept` | 클라이언트가 받을 수 있는 데이터 형식 |
-| `Cookie` | 클라이언트 저장 데이터 전송 |
-| `Cache-Control` | 캐시 정책 (no-cache, max-age 등) |
-
-**상태코드 정리**
-| 코드 | 의미 | 설명 |
-|---|---|---|
-| 200 | OK | 조회/수정/삭제 성공 |
-| 201 | Created | 생성 성공 |
-| 400 | Bad Request | 잘못된 요청 (파라미터 누락 등) |
-| 401 | Unauthorized | 인증 필요 (로그인 안 됨) |
-| 403 | Forbidden | 권한 없음 (로그인은 됐으나 접근 불가) |
-| 404 | Not Found | 리소스 없음 |
-| 500 | Internal Server Error | 서버 내부 오류 |
-
-**HTTP 메서드 정리**
-| 메서드 | 용도 | 바디 |
-|---|---|---|
-| GET | 조회 | 없음 |
-| POST | 생성 | 있음 |
-| PUT | 전체 수정 | 있음 |
-| PATCH | 일부 수정 | 있음 |
-| DELETE | 삭제 | 없음 |
 
 ### 스타트라인
 
@@ -232,11 +194,20 @@ Content-Length: 15
 
 | 헤더 | 설명 |
 |---|---|
-| `Host` | 요청 대상 서버 도메인 |
+| `Host` | 목적지 서버 주소 (호스트 네임) |
 | `Content-Type` | 바디 데이터 형식 (json, html 등) |
 | `Content-Length` | 바디 크기 (바이트) |
-| `Authorization` | 인증 토큰 |
+| `Connection` | 연결 유지 방식 (keep-alive: 재사용, close: 요청 후 끊음) |
+| `Authorization` | 인증 토큰 (ex: Bearer JWT토큰) |
 | `Accept` | 클라이언트가 받을 수 있는 데이터 형식 |
+| `Cookie` | 클라이언트 저장 데이터 전송 |
+| `Cache-Control` | 캐시 정책 (no-cache, max-age 등) |
+
+**연결 방식**
+| 방식 | 헤더 | 설명 |
+|---|---|---|
+| Non-Persistent | `Connection: close` | 요청마다 TCP 연결 새로 생성 후 끊음, 비효율적 |
+| Persistent | `Connection: keep-alive` | 하나의 TCP 연결로 여러 요청 처리, 효율적 |
 
 ### 바디
 
@@ -247,22 +218,22 @@ Content-Length: 15
 
 ### 상태코드
 
-| 코드 | 의미 |
-|---|---|
-| 200 | 성공 |
-| 201 | 생성 성공 |
-| 400 | 잘못된 요청 |
-| 401 | 인증 필요 |
-| 403 | 권한 없음 |
-| 404 | 찾을 수 없음 |
-| 500 | 서버 에러 |
+| 코드 | 의미 | 설명 |
+|---|---|---|
+| 200 | OK | 조회/수정/삭제 성공 |
+| 201 | Created | 생성 성공 |
+| 400 | Bad Request | 잘못된 요청 (파라미터 누락 등) |
+| 401 | Unauthorized | 인증 필요 (로그인 안 됨) |
+| 403 | Forbidden | 권한 없음 (로그인은 됐으나 접근 불가) |
+| 404 | Not Found | 리소스 없음 |
+| 500 | Internal Server Error | 서버 내부 오류 |
 
 ### HTTP 메서드
 
-| 메서드 | 용도 |
-|---|---|
-| GET | 조회 |
-| POST | 생성 |
-| PUT | 전체 수정 |
-| PATCH | 일부 수정 |
-| DELETE | 삭제 |
+| 메서드 | 용도 | 바디 |
+|---|---|---|
+| GET | 조회 | 없음 |
+| POST | 생성 | 있음 |
+| PUT | 전체 수정 | 있음 |
+| PATCH | 일부 수정 | 있음 |
+| DELETE | 삭제 | 없음 |
