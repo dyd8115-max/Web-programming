@@ -306,7 +306,8 @@ const g = gen();  // 함수 본체가 실행되지 않음 (아무 출력 없음)
 
 > Generator Function을 호출해도 함수의 본체(Body)는 실행되지 않는다.
 > 대신 Generator 객체만 반환된다.
-> 함수의 코드는 `next()` 메서드를 호출할 때마다 **일부씩 실행**된다.
+
+> 함수의 코드는 `next()` 메서드를 호출할 때마다 일부씩 실행된다.
 
 ### 기본 예시
 
@@ -318,10 +319,10 @@ function* gen() {
 }
 
 const g = gen();  // 함수 본체는 아직 실행 안 됨
-g.next();  // { value: 1, done: false } - 첫 yield까지 실행
-g.next();  // { value: 2, done: false } - 두 번째 yield까지 실행
-g.next();  // { value: 3, done: false } - 세 번째 yield까지 실행
-g.next();  // { value: undefined, done: true } - 완료
+g.next();  // { value: 1, done: false }
+g.next();  // { value: 2, done: false }
+g.next();  // { value: 3, done: false }
+g.next();  // { value: undefined, done: true }
 ```
 
 ---
