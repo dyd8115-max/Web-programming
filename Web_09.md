@@ -1,6 +1,6 @@
 # Serverless — React + OpenAI API 강의 노트
 
-> 과목: 웹 프로그래밍 | 담당: 박기석 교수님
+
 
 ---
 
